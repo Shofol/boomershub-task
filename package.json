@@ -1,0 +1,25 @@
+{
+  "name": "boomershub-task",
+  "version": "1.0.0",
+  "description": "Full-stack application with Next.js, Express.js, and MySQL",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspace=server",
+    "install:all": "npm install && npm install --workspace=client && npm install --workspace=server && npm install --workspace=shared"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
