@@ -5,6 +5,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import { errorHandler } from "./middleware/errorHandler";
 import userRoutes from "./routes/userRoutes";
+import scrapeRoutes from "./routes/scrapeRoutes";
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +39,7 @@ app.get("/api/health", (req, res) => {
 
 // API Routes
 app.use("/api/users", userRoutes);
+app.use("/api/scrape", scrapeRoutes);
 
 // 404 handler
 app.use("*", (req, res) => {
