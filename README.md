@@ -11,11 +11,16 @@ A modern full-stack application built with **Next.js**, **Express.js**, and **My
 
 ## 🚀 Features
 
-- **User Management**: Complete CRUD operations for users
+- **Property Management**: Display and manage scraped properties
+- **Search Functionality**: Search properties by name, city, or state
+- **Property Details**: Detailed property view with image gallery
+- **Image Navigation**: Click through property images with thumbnails
+- **Web Scraping**: Automated property data scraping with CSV integration
+- **Image Storage**: MinIO integration for property image storage and display
 - **Modern UI**: Beautiful, responsive design with Tailwind CSS
 - **Type Safety**: Full TypeScript support across the stack
 - **API Validation**: Comprehensive input validation and error handling
-- **Database**: MySQL with migrations and seeding
+- **Database**: MySQL with migrations (no seeding required)
 - **Development**: Hot reloading and concurrent development servers
 
 ## 📁 Project Structure
@@ -45,6 +50,7 @@ boomershub-task/
 
 - **Node.js** (v18 or higher)
 - **MySQL** (v8.0 or higher)
+- **Docker** (for MinIO)
 - **npm** or **yarn**
 
 ## 📦 Installation
@@ -65,12 +71,21 @@ boomershub-task/
    - Copy `server/env.example` to `server/.env`
    - Update the database credentials in `server/.env`
 
-4. **Run database migrations and seeding**
+4. **Run database migrations**
    ```bash
    cd server
    npm run build
    npm run db:migrate
-   npm run db:seed
+   ```
+
+5. **Start MinIO for image storage (optional)**
+   ```bash
+   ./start-minio.sh
+   ```
+   Or manually:
+   ```bash
+   mkdir -p ~/minio/data
+   docker run -p 9000:9000 -p 9090:9090 --name minio -v ~/minio/data:/data -e "MINIO_ROOT_USER=root" -e "MINIO_ROOT_PASSWORD=password" quay.io/minio/minio server /data --console-address ":9090"
    ```
 
 ## 🚀 Development
@@ -100,15 +115,21 @@ cd server && npm run dev
 
 ## 🌐 API Endpoints
 
-### Users API
+### Properties API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/users` | Get all users (with pagination) |
-| GET | `/api/users/:id` | Get user by ID |
-| POST | `/api/users` | Create new user |
-| PUT | `/api/users/:id` | Update user |
-| DELETE | `/api/users/:id` | Delete user |
+| GET | `/api/properties` | Get all properties (with images) |
+| GET | `/api/properties/:id` | Get property by ID (with all images) |
+| GET | `/api/properties/:id/images` | Get all images for a property |
+| DELETE | `/api/properties/:id` | Delete property |
+
+### Scraping API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/scrape/scrape` | Run property scraper with CSV data |
+| GET | `/api/scrape/test-csv` | Test CSV reading functionality |
 
 ### Health Check
 | Method | Endpoint | Description |
@@ -117,23 +138,47 @@ cd server && npm run dev
 
 ## 📊 Database Schema
 
-### Users Table
+### Properties Table
 ```sql
-CREATE TABLE users (
+CREATE TABLE properties (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  age INT NOT NULL CHECK (age > 0 AND age <= 120),
+  address VARCHAR(500),
+  city VARCHAR(255),
+  county VARCHAR(255),
+  zipcode VARCHAR(20),
+  state VARCHAR(100),
+  phone VARCHAR(50),
+  type VARCHAR(255),
+  capacity INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 ```
 
+## 🖼️ Image Storage (MinIO)
+
+Property images are stored in MinIO with the following structure:
+```
+boomershub/
+├── Brookdale Creekside/     # Property name
+│   ├── main.jpg            # Main property image
+│   ├── exterior.jpg        # Exterior view
+│   └── interior.jpg        # Interior view
+└── The Delaney At Georgetown Village/  # Property name
+    ├── main.jpg
+    └── ...
+```
+
+**Important**: Images must be stored using the exact property name as the folder name, matching the property names in your CSV file.
+
 ## 🎨 Frontend Features
 
 - **Responsive Design**: Works on desktop, tablet, and mobile
-- **Real-time Updates**: Automatic refresh after CRUD operations
-- **Form Validation**: Client-side validation with error handling
+- **Search Interface**: Real-time search by property name, city, or state
+- **Property Details**: Dedicated page for each property with full information
+- **Image Gallery**: Interactive image navigation with thumbnails
+- **Real-time Updates**: Automatic refresh after operations
 - **Loading States**: Beautiful loading indicators
 - **Error Handling**: User-friendly error messages
 
@@ -157,6 +202,13 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=your_password
 DB_NAME=boomershub_task
+
+# MinIO Configuration
+MINIO_ENDPOINT=localhost
+MINIO_PORT=9000
+MINIO_USE_SSL=false
+MINIO_ACCESS_KEY=root
+MINIO_SECRET_KEY=password
 ```
 
 ## 🏗️ Build & Deployment
@@ -181,13 +233,17 @@ The application includes comprehensive error handling and validation. You can te
 
 Example API calls:
 ```bash
-# Get all users
-curl http://localhost:3001/api/users
+# Get all properties
+curl http://localhost:3001/api/properties
 
-# Create a user
-curl -X POST http://localhost:3001/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":"John Doe","email":"john@example.com","age":30}'
+# Get property images
+curl http://localhost:3001/api/properties/1/images
+
+# Run scraper to populate database
+curl http://localhost:3001/api/scrape/scrape
+
+# Test CSV reading
+curl http://localhost:3001/api/scrape/test-csv
 ```
 
 ## 🤝 Contributing
@@ -211,13 +267,23 @@ This project is licensed under the MIT License.
    - Check database credentials in `.env`
    - Verify database exists
 
-2. **Port Already in Use**
+2. **MinIO Connection Error**
+   - Ensure MinIO is running: `docker ps | grep minio`
+   - Check MinIO logs: `docker logs minio`
+   - Verify MinIO credentials in `.env`
+
+3. **Port Already in Use**
    - Change ports in `.env` files
    - Kill processes using the ports
 
-3. **TypeScript Errors**
+4. **TypeScript Errors**
    - Run `npm run build` in each package
    - Check for missing dependencies
+
+5. **Image Display Issues**
+   - Check MinIO console at http://localhost:9090
+   - Verify `boomershub` bucket exists
+   - Ensure images are uploaded with correct paths
 
 ### Getting Help
 

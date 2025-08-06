@@ -4,8 +4,9 @@ import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import { errorHandler } from "./middleware/errorHandler";
-import userRoutes from "./routes/userRoutes";
 import scrapeRoutes from "./routes/scrapeRoutes";
+import propertyRoutes from "./routes/propertyRoutes";
+import { MinioService } from "./services/minioService";
 
 // Load environment variables
 dotenv.config();
@@ -38,8 +39,8 @@ app.get("/api/health", (req, res) => {
 });
 
 // API Routes
-app.use("/api/users", userRoutes);
 app.use("/api/scrape", scrapeRoutes);
+app.use("/api/properties", propertyRoutes);
 
 // 404 handler
 app.use("*", (req, res) => {
@@ -53,10 +54,21 @@ app.use("*", (req, res) => {
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+
+  // Initialize MinIO
+  try {
+    await MinioService.testConnection();
+    await MinioService.initializeBucket();
+  } catch (error) {
+    console.error("⚠️ MinIO initialization failed:", error);
+    console.log(
+      "📝 Make sure MinIO is running with: docker run -p 9000:9000 -p 9090:9090 --name minio -v ~/minio/data:/data -e 'MINIO_ROOT_USER=root' -e 'MINIO_ROOT_PASSWORD=password' quay.io/minio/minio server /data --console-address ':9090'"
+    );
+  }
 });
 
 export default app;
