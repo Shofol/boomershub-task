@@ -1,4 +1,6 @@
 import * as Minio from "minio";
+import * as fs from "fs";
+import * as path from "path";
 
 // MinIO client configuration
 const minioClient = new Minio.Client({
@@ -113,6 +115,84 @@ export class MinioService {
       );
       return [];
     }
+  }
+
+  // Upload property images from assets folder to MinIO
+  static async uploadPropertyImages(propertyName: string): Promise<string[]> {
+    try {
+      const assetsPath = path.join(__dirname, "../../assets", propertyName);
+
+      // Check if the property folder exists
+      if (!fs.existsSync(assetsPath)) {
+        console.log(`⚠️ No assets folder found for property: ${propertyName}`);
+        return [];
+      }
+
+      const uploadedImages: string[] = [];
+      const files = fs.readdirSync(assetsPath);
+
+      for (const file of files) {
+        const filePath = path.join(assetsPath, file);
+        const stats = fs.statSync(filePath);
+
+        // Only process files (not directories)
+        if (stats.isFile()) {
+          // Check if it's an image file
+          const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+          const isImage = imageExtensions.some((ext) =>
+            file.toLowerCase().endsWith(ext)
+          );
+
+          if (isImage) {
+            try {
+              const objectName = `${propertyName}/${file}`;
+              const fileStream = fs.createReadStream(filePath);
+
+              await minioClient.putObject(
+                BUCKET_NAME,
+                objectName,
+                fileStream,
+                stats.size,
+                {
+                  "Content-Type": this.getContentType(file),
+                }
+              );
+
+              console.log(`✅ Uploaded: ${objectName}`);
+              uploadedImages.push(objectName);
+            } catch (error) {
+              console.error(`❌ Error uploading ${file}:`, error);
+            }
+          } else {
+            console.log(`⏭️ Skipping non-image file: ${file}`);
+          }
+        }
+      }
+
+      console.log(
+        `📁 Uploaded ${uploadedImages.length} images for property: ${propertyName}`
+      );
+      return uploadedImages;
+    } catch (error) {
+      console.error(
+        `❌ Error uploading images for property ${propertyName}:`,
+        error
+      );
+      return [];
+    }
+  }
+
+  // Helper method to get content type based on file extension
+  private static getContentType(filename: string): string {
+    const ext = path.extname(filename).toLowerCase();
+    const contentTypes: { [key: string]: string } = {
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".png": "image/png",
+      ".gif": "image/gif",
+      ".webp": "image/webp",
+    };
+    return contentTypes[ext] || "application/octet-stream";
   }
 
   // Test MinIO connection

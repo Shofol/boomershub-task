@@ -161,6 +161,20 @@ export class PropertyController {
         scrapedData.zipcode || null,
         scrapedData.state || null,
       ]);
+
+      // Upload property images to MinIO after saving to database
+      console.log(`🖼️ Uploading images for property: ${propertyName}`);
+      const uploadedImages = await MinioService.uploadPropertyImages(
+        propertyName
+      );
+
+      if (uploadedImages.length > 0) {
+        console.log(
+          `✅ Successfully uploaded ${uploadedImages.length} images for property: ${propertyName}`
+        );
+      } else {
+        console.log(`⚠️ No images uploaded for property: ${propertyName}`);
+      }
     } catch (error) {
       console.error("Error saving scraped property:", error);
       throw error;

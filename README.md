@@ -155,18 +155,39 @@ CREATE TABLE properties (
 );
 ```
 
-## 🖼️ Image Storage (MinIO)
 
-Property images are stored in MinIO with the following structure:
+
+## 🖼️ Image Storage (MinIO)
 ```
 boomershub/
 ├── Brookdale Creekside/     # Property name
-│   ├── main.jpg            # Main property image
-│   ├── exterior.jpg        # Exterior view
-│   └── interior.jpg        # Interior view
+│   ├── brookdale-creekside-1-entrance_sd.jpg
+│   ├── brookdale-creekside-4-bedroom_sd.jpg
+│   └── brookdale-creekside-5-living-room_sd.jpg
 └── The Delaney At Georgetown Village/  # Property name
-    ├── main.jpg
+    ├── TheDelaneyAtGeorgetownVillage_photos_01_Seniorly_sd.png
     └── ...
+```
+
+### Automatic Image Upload
+
+When properties are scraped and saved to the database, their corresponding images are automatically uploaded to MinIO:
+
+1. **Automatic Upload**: Images are uploaded when `saveScrapedProperty()` is called
+2. **Path Structure**: Images are stored as `boomershub/{propertyName}/{filename}`
+3. **Asset Location**: Images must be in `server/assets/{propertyName}/` folder
+4. **Supported Formats**: JPG, JPEG, PNG, GIF, WEBP
+
+### Manual Image Upload
+
+You can also manually upload images for existing properties:
+
+```bash
+# Upload images for a specific property
+curl -X POST http://localhost:3001/api/properties/Brookdale%20Creekside/upload-images
+
+# Upload images for all properties
+curl -X POST http://localhost:3001/api/properties/upload-all-images
 ```
 
 **Important**: Images must be stored using the exact property name as the folder name, matching the property names in your CSV file.
