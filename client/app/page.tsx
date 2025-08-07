@@ -3,23 +3,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
-
-interface Property {
-  id?: number;
-  name: string;
-  address?: string | null;
-  city?: string | null;
-  county?: string | null;
-  zipcode?: string | null;
-  state?: string | null;
-  phone?: string | null;
-  type?: string | null;
-  capacity?: number | null;
-  mainImage?: string | null;
-  images?: string[] | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-}
+import { Property } from "@/types/property";
 
 export default function Home() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -54,7 +38,9 @@ export default function Home() {
   const fetchProperties = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:3001/api/properties");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/properties`
+      );
       setProperties(response.data.data);
       setFilteredProperties(response.data.data);
     } catch (err) {
@@ -71,7 +57,7 @@ export default function Home() {
       setError("");
 
       const response = await axios.get(
-        "http://localhost:3001/api/scrape/scrape"
+        `${process.env.NEXT_PUBLIC_API_URL}/scrape`
       );
 
       if (response.data.success) {
@@ -91,16 +77,6 @@ export default function Home() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      await axios.delete(`http://localhost:3001/api/properties/${id}`);
-      fetchProperties();
-    } catch (err) {
-      setError("Failed to delete property");
-      console.error("Error deleting property:", err);
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-6xl mx-auto">
@@ -108,32 +84,7 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             BoomersHub Property Management
           </h1>
-          <p className="text-xl text-gray-600">
-            Property Management System with Web Scraping
-          </p>
         </header>
-
-        {/* Scrape Button */}
-        <div className="mb-8 text-center">
-          <button
-            onClick={handleScrape}
-            disabled={scraping}
-            className="btn-primary px-8 py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {scraping ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto mb-2"></div>
-                Scraping Properties...
-              </>
-            ) : (
-              "🚀 Scrape Properties from CSV"
-            )}
-          </button>
-          <p className="text-sm text-gray-500 mt-2">
-            This will scrape property data from the CSV file and populate the
-            database
-          </p>
-        </div>
 
         {/* Search Bar */}
         <div className="mb-6">
@@ -213,10 +164,10 @@ export default function Home() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-start space-x-3">
-                        {property.mainImage && (
+                        {property.images && property.images.length > 0 && (
                           <div className="flex-shrink-0">
                             <img
-                              src={property.mainImage}
+                              src={property.images[0]}
                               alt={property.name}
                               className="w-16 h-16 object-cover rounded-lg"
                               onError={(e) => {
@@ -279,17 +230,33 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleDelete(property.id!)}
-                      className="text-red-600 hover:text-red-800 text-sm font-medium ml-4"
-                    >
-                      Delete
-                    </button>
                   </div>
                 </div>
               ))}
             </div>
           )}
+        </div>
+
+        {/* Scrape Button */}
+        <div className="my-8 text-center">
+          <button
+            onClick={handleScrape}
+            disabled={scraping}
+            className="btn-primary px-8 py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {scraping ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto mb-2"></div>
+                Scraping Properties...
+              </>
+            ) : (
+              "Scrape Properties"
+            )}
+          </button>
+          <p className="text-sm text-gray-500 mt-2">
+            This will scrape property data from the CSV file and populate the
+            database
+          </p>
         </div>
       </div>
     </div>

@@ -30,7 +30,7 @@ export class ScraperController {
     });
   }
 
-  static async getProvider(
+  static async scrapeProperties(
     req: Request,
     res: Response,
     next: NextFunction
@@ -126,6 +126,7 @@ export class ScraperController {
             city,
             county,
             zipcode,
+            state: "TEXAS",
           };
 
           await PropertyController.saveScrapedProperty(

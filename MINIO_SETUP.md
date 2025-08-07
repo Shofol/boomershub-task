@@ -17,7 +17,7 @@ mkdir -p ~/minio/data
 
 2. Start MinIO using Docker Compose:
 ```bash
-docker-compose -f docker-compose.minio.yml up -d
+docker-compose -f docker-compose.yml up -d
 ```
 
 ### Option 2: Using Docker Run

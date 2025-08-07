@@ -20,7 +20,7 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? ["https://yourdomain.com"]
+        ? ["https://www.boomershub.com/"]
         : ["http://localhost:3000"],
     credentials: true,
   })
@@ -55,9 +55,9 @@ app.use(errorHandler);
 
 // Start server
 app.listen(PORT, async () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`Health check: http://localhost:${PORT}/api/health`);
 
   // Initialize MinIO
   try {

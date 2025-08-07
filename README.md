@@ -128,8 +128,7 @@ cd server && npm run dev
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/scrape/scrape` | Run property scraper with CSV data |
-| GET | `/api/scrape/test-csv` | Test CSV reading functionality |
+| GET | `/api/scrape` | Run property scraper with CSV data |
 
 ### Health Check
 | Method | Endpoint | Description |
@@ -240,7 +239,7 @@ curl http://localhost:3001/api/properties
 curl http://localhost:3001/api/properties/1/images
 
 # Run scraper to populate database
-curl http://localhost:3001/api/scrape/scrape
+curl http://localhost:3001/api/scrape
 
 # Test CSV reading
 curl http://localhost:3001/api/scrape/test-csv

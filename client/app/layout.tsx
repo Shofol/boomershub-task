@@ -5,9 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "BoomersHub Task - Full Stack App",
-  description:
-    "A full-stack application built with Next.js, Express.js, and MySQL",
+  title: "BoomersHub Task",
+  description: "A Property Management App",
 };
 
 export default function RootLayout({

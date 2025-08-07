@@ -13,11 +13,3 @@ export interface Property {
   created_at?: string | null;
   updated_at?: string | null;
 }
-
-export interface ScrapedPropertyData {
-  providerName: string;
-  address: string;
-  city: string;
-  county: string;
-  zipcode: string;
-}

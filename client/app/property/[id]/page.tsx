@@ -4,23 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
-
-interface Property {
-  id?: number;
-  name: string;
-  address?: string | null;
-  city?: string | null;
-  county?: string | null;
-  zipcode?: string | null;
-  state?: string | null;
-  phone?: string | null;
-  type?: string | null;
-  capacity?: number | null;
-  mainImage?: string | null;
-  images?: string[] | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-}
+import GoogleMap from "@/components/GoogleMap";
+import { Property } from "@/types/property";
 
 export default function PropertyDetails() {
   const params = useParams();
@@ -40,37 +25,15 @@ export default function PropertyDetails() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:3001/api/properties/${id}`
+        `${process.env.NEXT_PUBLIC_API_URL}/properties/${id}`
       );
       const propertyData = response.data.data;
-      console.log("📊 Property data received:", {
-        name: propertyData.name,
-        mainImage: propertyData.mainImage ? "found" : "not found",
-        imagesCount: propertyData.images ? propertyData.images.length : 0,
-        images: propertyData.images,
-      });
       setProperty(propertyData);
     } catch (err) {
       setError("Failed to fetch property details");
       console.error("Error fetching property:", err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!property?.id) return;
-
-    if (confirm("Are you sure you want to delete this property?")) {
-      try {
-        await axios.delete(
-          `http://localhost:3001/api/properties/${property.id}`
-        );
-        router.push("/");
-      } catch (err) {
-        setError("Failed to delete property");
-        console.error("Error deleting property:", err);
-      }
     }
   };
 
@@ -116,17 +79,19 @@ export default function PropertyDetails() {
     );
   }
 
-  const currentImage =
-    property.images && property.images.length > 0
-      ? property.images[currentImageIndex]
-      : property.mainImage;
-
   const hasMultipleImages = property.images && property.images.length > 1;
-  const totalImages = property.images
-    ? property.images.length
-    : property.mainImage
-    ? 1
-    : 0;
+
+  // Construct full address for Google Maps
+  const constructFullAddress = () => {
+    const addressParts = [
+      property.address,
+      property.city,
+      property.state,
+      property.zipcode,
+    ].filter(Boolean);
+
+    return addressParts.join(", ");
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -166,17 +131,19 @@ export default function PropertyDetails() {
             {property.city && <span>{property.city}</span>}
             {property.city && property.state && <span>, </span>}
             {property.state && <span>{property.state}</span>}
-            {(property.city || property.state) && property.zipcode && <span> </span>}
+            {(property.city || property.state) && property.zipcode && (
+              <span> </span>
+            )}
             {property.zipcode && <span>{property.zipcode}</span>}
           </div>
         </div>
 
         {/* Image Gallery */}
-        {currentImage && (
+        {property.images && property.images.length > 0 && (
           <div className="mb-8">
             <div className="relative">
               <img
-                src={currentImage}
+                src={property.images[currentImageIndex]}
                 alt={property.name}
                 className="w-full h-96 object-cover rounded-lg cursor-pointer"
                 onClick={hasMultipleImages ? nextImage : undefined}
@@ -228,14 +195,14 @@ export default function PropertyDetails() {
 
                   {/* Image Counter */}
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-                    {currentImageIndex + 1} of {property.images?.length || 0}
+                    {currentImageIndex + 1} of {property.images.length}
                   </div>
                 </>
               )}
             </div>
 
             {/* Image Thumbnails */}
-            {hasMultipleImages && property.images && (
+            {hasMultipleImages && (
               <div className="flex space-x-2 mt-4 overflow-x-auto">
                 {property.images.map((image, index) => (
                   <img
@@ -256,13 +223,12 @@ export default function PropertyDetails() {
                 ))}
               </div>
             )}
-
-
           </div>
         )}
 
-        {/* Property Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Property Details and Map */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Property Information */}
           <div className="card">
             <h2 className="text-xl font-semibold mb-4 text-gray-800">
               Property Information
@@ -305,25 +271,15 @@ export default function PropertyDetails() {
             </div>
           </div>
 
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">
-              Actions
-            </h2>
-            <div className="space-y-3">
-              <button
-                onClick={handleDelete}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-              >
-                Delete Property
-              </button>
-              <Link
-                href="/"
-                className="block w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-center"
-              >
-                Back to List
-              </Link>
+          {/* Google Maps */}
+          {constructFullAddress() && (
+            <div className="lg:col-span-2">
+              <GoogleMap
+                address={constructFullAddress()}
+                propertyName={property.name}
+              />
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

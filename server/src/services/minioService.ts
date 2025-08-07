@@ -52,15 +52,9 @@ export class MinioService {
   // Get all images for a property
   static async getPropertyImages(propertyName: string): Promise<string[]> {
     try {
-      console.log(
-        `🔍 Looking for images in bucket: ${BUCKET_NAME}/${propertyName}/`
-      );
-
-      // List all objects in the property folder
       const objectsStream = minioClient.listObjects(
         BUCKET_NAME,
-        `${propertyName}/`,
-        true
+        `${propertyName}/`
       );
       const foundObjects: string[] = [];
 
@@ -68,7 +62,6 @@ export class MinioService {
         objectsStream.on("data", (obj) => {
           if (obj.name) {
             foundObjects.push(obj.name);
-            console.log(`📸 Found object: ${obj.name}`);
           }
         });
 
@@ -101,15 +94,13 @@ export class MinioService {
               );
 
               if (isImage) {
-                console.log(`🖼️ Processing image: ${objName}`);
                 const url = await this.getImageUrl(objName);
                 imageUrls.push(url);
-                console.log(`✅ Added image URL: ${url.substring(0, 50)}...`);
               } else {
                 console.log(`⏭️ Skipping non-image file: ${objName}`);
               }
             } catch (error) {
-              console.error(`❌ Error processing object ${objName}:`, error);
+              console.error(`Error processing object ${objName}:`, error);
             }
           }
           resolve(imageUrls);
@@ -121,22 +112,6 @@ export class MinioService {
         error
       );
       return [];
-    }
-  }
-
-  // Get main image for a property (first image)
-  static async getPropertyMainImage(
-    propertyName: string
-  ): Promise<string | null> {
-    try {
-      const images = await this.getPropertyImages(propertyName);
-      return images.length > 0 ? images[0] : null;
-    } catch (error) {
-      console.error(
-        `❌ Error getting main image for property ${propertyName}:`,
-        error
-      );
-      return null;
     }
   }
 

@@ -22,16 +22,14 @@ export class PropertyController {
       const propertiesWithImages = await Promise.all(
         properties.map(async (property) => {
           try {
-            const mainImage = await MinioService.getPropertyMainImage(
-              property.name
-            );
+            const images = await MinioService.getPropertyImages(property.name);
             return {
               ...property,
-              mainImage,
+              images,
             };
           } catch (error) {
             console.error(
-              `Error getting image for property ${property.name}:`,
+              `Error getting images for property ${property.name}:`,
               error
             );
             return property;
@@ -75,18 +73,12 @@ export class PropertyController {
       try {
         console.log(`🖼️ Getting images for property: ${property.name}`);
 
-        const mainImage = await MinioService.getPropertyMainImage(
-          property.name
-        );
         const images = await MinioService.getPropertyImages(property.name);
 
         console.log(
-          `📊 Property ${property.name}: mainImage=${
-            mainImage ? "found" : "not found"
-          }, totalImages=${images.length}`
+          `📊 Property ${property.name}: totalImages=${images.length}`
         );
 
-        property.mainImage = mainImage;
         property.images = images;
       } catch (error) {
         console.error(
@@ -99,121 +91,6 @@ export class PropertyController {
         success: true,
         data: property,
         message: "Property retrieved successfully",
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // Create new property
-  static async createProperty(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const propertyData: Property = req.body;
-
-      const query = `
-        INSERT INTO properties (name, address, city, state, zipcode, county, phone, type, capacity)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-
-      const result = await executeQuery(query, [
-        propertyData.name,
-        propertyData.address || null,
-        propertyData.city || null,
-        propertyData.state || null,
-        propertyData.zipcode || null,
-        propertyData.county || null,
-        propertyData.phone || null,
-        propertyData.type || null,
-        propertyData.capacity || null,
-      ]);
-
-      const insertId = (result as any).insertId;
-
-      res.status(201).json({
-        success: true,
-        data: { id: insertId, ...propertyData },
-        message: "Property created successfully",
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // Update property
-  static async updateProperty(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const { id } = req.params;
-      const propertyData: Partial<Property> = req.body;
-
-      const query = `
-        UPDATE properties 
-        SET name = ?, address = ?, city = ?, state = ?, zipcode = ?, 
-            county = ?, phone = ?, type = ?, capacity = ?
-        WHERE id = ?
-      `;
-
-      const result = await executeQuery(query, [
-        propertyData.name,
-        propertyData.address || null,
-        propertyData.city || null,
-        propertyData.state || null,
-        propertyData.zipcode || null,
-        propertyData.county || null,
-        propertyData.phone || null,
-        propertyData.type || null,
-        propertyData.capacity || null,
-        id,
-      ]);
-
-      if ((result as any).affectedRows === 0) {
-        res.status(404).json({
-          success: false,
-          message: "Property not found",
-        });
-        return;
-      }
-
-      res.json({
-        success: true,
-        data: { id: parseInt(id), ...propertyData },
-        message: "Property updated successfully",
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // Delete property
-  static async deleteProperty(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const { id } = req.params;
-
-      const query = "DELETE FROM properties WHERE id = ?";
-      const result = await executeQuery(query, [id]);
-
-      if ((result as any).affectedRows === 0) {
-        res.status(404).json({
-          success: false,
-          message: "Property not found",
-        });
-        return;
-      }
-
-      res.json({
-        success: true,
-        message: "Property deleted successfully",
       });
     } catch (error) {
       next(error);
