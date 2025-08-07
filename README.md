@@ -71,7 +71,7 @@ boomershub-task/
    - Copy `server/env.example` to `server/.env`
    - Update the database credentials in `server/.env`
     - Copy `client/env.example` to `client/.env`
-   - Update the database credentials in `client/.env`
+   - Update the Google Maps API credentials in `client/.env`
 
 4. **Run database migrations**
    ```bash
