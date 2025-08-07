@@ -2,6 +2,9 @@
 
 A modern full-stack application built with **Next.js**, **Express.js**, and **MySQL**. This project demonstrates a complete CRUD application with a beautiful UI and robust backend API.
 
+## Demo Video 
+- **Presentation Video 1**: (Video 1)[https://www.loom.com/share/ad80d8cb6c9f4be0a18c4d011c664e44?sid=c5f634db-0cb8-4860-999a-499fb01a46fc]
+
 ## 🏗️ Architecture
 
 - **Frontend**: Next.js 14 with TypeScript and Tailwind CSS
