@@ -143,14 +143,17 @@ export class PropertyController {
   ): Promise<void> {
     try {
       const query = `
-        INSERT INTO properties (name, address, city, county, zipcode, state)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO properties (name, address, city, county, zipcode, state, phone, type, capacity)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE 
           address = VALUES(address),
           city = VALUES(city),
           county = VALUES(county),
           zipcode = VALUES(zipcode),
-          state = VALUES(state)
+          state = VALUES(state),
+          phone = VALUES(phone),
+          type = VALUES(type),
+          capacity = VALUES(capacity)
       `;
 
       await executeQuery(query, [
@@ -160,6 +163,9 @@ export class PropertyController {
         scrapedData.county || null,
         scrapedData.zipcode || null,
         scrapedData.state || null,
+        scrapedData.phone || null,
+        scrapedData.type || null,
+        scrapedData.capacity || null,
       ]);
 
       // Upload property images to MinIO after saving to database

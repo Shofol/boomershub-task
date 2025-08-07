@@ -243,7 +243,12 @@ export default function PropertyDetails() {
               {property.phone && (
                 <div>
                   <span className="font-medium text-gray-700">Phone:</span>
-                  <span className="ml-2 text-gray-600">{property.phone}</span>
+                  <a
+                    href={`tel:${property.phone}`}
+                    className="ml-2 text-blue-600 hover:text-blue-800"
+                  >
+                    {property.phone}
+                  </a>
                 </div>
               )}
               {property.type && (
@@ -256,7 +261,7 @@ export default function PropertyDetails() {
                 <div>
                   <span className="font-medium text-gray-700">Capacity:</span>
                   <span className="ml-2 text-gray-600">
-                    {property.capacity}
+                    {property.capacity} beds
                   </span>
                 </div>
               )}

@@ -51,7 +51,7 @@ boomershub-task/
 - **Node.js** (v18 or higher)
 - **MySQL** (v8.0 or higher)
 - **Docker** (for MinIO)
-- **npm** or **yarn**
+- **npm**
 
 ## 📦 Installation
 
@@ -70,22 +70,18 @@ boomershub-task/
    - Create a MySQL database named `boomershub_task`
    - Copy `server/env.example` to `server/.env`
    - Update the database credentials in `server/.env`
+    - Copy `client/env.example` to `client/.env`
+   - Update the database credentials in `client/.env`
 
 4. **Run database migrations**
    ```bash
    cd server
-   npm run build
    npm run db:migrate
    ```
 
-5. **Start MinIO for image storage (optional)**
+5. **Start MinIO for image storage (run it in the root folder)**
    ```bash
-   ./start-minio.sh
-   ```
-   Or manually:
-   ```bash
-   mkdir -p ~/minio/data
-   docker run -p 9000:9000 -p 9090:9090 --name minio -v ~/minio/data:/data -e "MINIO_ROOT_USER=root" -e "MINIO_ROOT_PASSWORD=password" quay.io/minio/minio server /data --console-address ":9090"
+      docker compose up -d 
    ```
 
 ## 🚀 Development
@@ -178,38 +174,6 @@ When properties are scraped and saved to the database, their corresponding image
 3. **Asset Location**: Images must be in `server/assets/{propertyName}/` folder
 4. **Supported Formats**: JPG, JPEG, PNG, GIF, WEBP
 
-### Manual Image Upload
-
-You can also manually upload images for existing properties:
-
-```bash
-# Upload images for a specific property
-curl -X POST http://localhost:3001/api/properties/Brookdale%20Creekside/upload-images
-
-# Upload images for all properties
-curl -X POST http://localhost:3001/api/properties/upload-all-images
-```
-
-**Important**: Images must be stored using the exact property name as the folder name, matching the property names in your CSV file.
-
-## 🎨 Frontend Features
-
-- **Responsive Design**: Works on desktop, tablet, and mobile
-- **Search Interface**: Real-time search by property name, city, or state
-- **Property Details**: Dedicated page for each property with full information
-- **Image Gallery**: Interactive image navigation with thumbnails
-- **Real-time Updates**: Automatic refresh after operations
-- **Loading States**: Beautiful loading indicators
-- **Error Handling**: User-friendly error messages
-
-## 🔧 Backend Features
-
-- **TypeScript**: Full type safety
-- **Error Handling**: Comprehensive error middleware
-- **Validation**: Input validation and sanitization
-- **Database Pooling**: Efficient MySQL connection management
-- **CORS**: Configured for development and production
-- **Security**: Helmet.js for security headers
 
 ## 📝 Environment Variables
 
@@ -262,57 +226,4 @@ curl http://localhost:3001/api/properties/1/images
 # Run scraper to populate database
 curl http://localhost:3001/api/scrape
 
-# Test CSV reading
-curl http://localhost:3001/api/scrape/test-csv
 ```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🆘 Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Error**
-   - Ensure MySQL is running
-   - Check database credentials in `.env`
-   - Verify database exists
-
-2. **MinIO Connection Error**
-   - Ensure MinIO is running: `docker ps | grep minio`
-   - Check MinIO logs: `docker logs minio`
-   - Verify MinIO credentials in `.env`
-
-3. **Port Already in Use**
-   - Change ports in `.env` files
-   - Kill processes using the ports
-
-4. **TypeScript Errors**
-   - Run `npm run build` in each package
-   - Check for missing dependencies
-
-5. **Image Display Issues**
-   - Check MinIO console at http://localhost:9090
-   - Verify `boomershub` bucket exists
-   - Ensure images are uploaded with correct paths
-
-### Getting Help
-
-If you encounter any issues, please:
-1. Check the console for error messages
-2. Verify all prerequisites are installed
-3. Ensure database is properly configured
-4. Check that all services are running
-
----
-
-**Happy Coding! 🎉** 

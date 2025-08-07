@@ -216,7 +216,7 @@ export default function Home() {
                           )}
                           {property.capacity && (
                             <p className="text-xs text-gray-400">
-                              Capacity: {property.capacity}
+                              Capacity: {property.capacity} beds
                             </p>
                           )}
                           {property.created_at && (

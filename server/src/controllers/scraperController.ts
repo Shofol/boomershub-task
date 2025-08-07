@@ -54,18 +54,20 @@ export class ScraperController {
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
 
-      const page = await browser.newPage();
-      await page.goto("https://txhhs.my.site.com/TULIP/s/ltc-provider-search");
-      await page.click("#combobox-button-6");
-      await page.click("#combobox-button-6-0-6");
-
-      await page.click("#combobox-button-10");
-      await page.click("#combobox-button-10-1-10");
-
       const scrapedProperties = [];
 
       // Scrape data for each property in the CSV
       for (const propertyName of propertyNames) {
+        const page = await browser.newPage();
+        await page.goto(
+          "https://txhhs.my.site.com/TULIP/s/ltc-provider-search"
+        );
+        await page.click("#combobox-button-6");
+        await page.click("#combobox-button-6-0-6");
+
+        await page.click("#combobox-button-10");
+        await page.click("#combobox-button-10-1-10");
+
         try {
           // Clear the input field and type the property name
           await page.click("#input-14");
@@ -99,6 +101,11 @@ export class ScraperController {
             (el) => el.innerText || ""
           );
 
+          const providerDetailLink = await page.$eval(
+            `${row} th`,
+            (el) => el.dataset.cellValue || ""
+          );
+
           const address = await page.$eval(
             `${row} td:nth-child(2)`,
             (el) => el.innerText || ""
@@ -119,6 +126,30 @@ export class ScraperController {
             (el) => el.innerText || ""
           );
 
+          await page.goto(providerDetailLink);
+          const phoneSelector =
+            "body > div.siteforcePrmBody > div.cCenterPanel.slds-m-top--x-large.slds-p-horizontal--medium > div > div > div > div > div.cb-section_row.slds-grid.slds-wrap.slds-large-nowrap > div > div > div:nth-child(2) > c-rs_-t-u-l-i-p_-provider-detail > div.mainContent > div > div.contentBackground > lightning-layout > slot > lightning-layout-item:nth-child(2) > slot > lightning-layout > slot > lightning-layout-item:nth-child(1) > slot > div:nth-child(6) > p > lightning-formatted-phone > a";
+
+          await page.waitForSelector(phoneSelector, {
+            visible: true,
+            timeout: 10000,
+          });
+
+          const phone = await page.$eval(
+            phoneSelector,
+            (el) => el.innerText || ""
+          );
+
+          const type = await page.$eval(
+            `body > div.siteforcePrmBody > div.cCenterPanel.slds-m-top--x-large.slds-p-horizontal--medium > div > div > div > div > div.cb-section_row.slds-grid.slds-wrap.slds-large-nowrap > div > div > div:nth-child(2) > c-rs_-t-u-l-i-p_-provider-detail > div.mainContent > div > div.tabcontent > ol:nth-child(3) > li:nth-child(1)`,
+            (el) => el.innerText || ""
+          );
+
+          const capacity = await page.$eval(
+            `body > div.siteforcePrmBody > div.cCenterPanel.slds-m-top--x-large.slds-p-horizontal--medium > div > div > div > div > div.cb-section_row.slds-grid.slds-wrap.slds-large-nowrap > div > div > div:nth-child(2) > c-rs_-t-u-l-i-p_-provider-detail > div.mainContent > div > div.tabcontent > ol:nth-child(3) > li:nth-child(3)`,
+            (el) => el.innerText || ""
+          );
+
           // Save scraped data to database
           const scrapedData = {
             providerName,
@@ -127,6 +158,9 @@ export class ScraperController {
             county,
             zipcode,
             state: "TEXAS",
+            phone,
+            type: type.split(":")[1].trim(),
+            capacity: +capacity.split(":")[1].trim(),
           };
 
           await PropertyController.saveScrapedProperty(
@@ -142,6 +176,9 @@ export class ScraperController {
               city,
               county,
               zipcode,
+              phone,
+              type,
+              capacity,
             },
           });
 
