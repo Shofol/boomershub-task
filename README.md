@@ -81,7 +81,7 @@ boomershub-task/
 
 5. **Start MinIO for image storage (run it in the root folder)**
    ```bash
-      docker compose up -d 
+docker compose up -d 
    ```
 
 ## 🚀 Development
